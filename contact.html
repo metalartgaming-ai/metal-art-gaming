@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="banner">
+    <div class="banner-content">
+        <div class="metal-text">METAL ART</div>
+        <div class="gaming-text">GAMING</div>
+    </div>
+
+    <div class="menu">
+        <a href="index.html">Accueil</a>
+        <a href="services.html">Services</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</div>
+
+<form action="https://formspree.io/f/mdaakwpw" method="POST">
+
+    <label>Nom et prénom *</label>
+    <input type="text" name="name" required>
+
+    <label>Entreprise (optionnel)</label>
+    <input type="text" name="company">
+
+    <label>Email *</label>
+    <input type="email" name="email" required>
+
+    <label>Message *</label>
+    <textarea name="message" rows="6" required></textarea>
+
+    <button type="submit">Envoyer le message</button>
+
+</form>

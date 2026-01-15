@@ -1,0 +1,191 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #061427;
+    color: white;
+}
+
+/* =======================
+   BANNIÈRE
+======================= */
+.banner {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: linear-gradient(135deg, #050f1d, #0b2a4a);
+}
+
+.banner-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+}
+
+/* TEXTE METAL */
+.metal-text {
+    font-size: 42px;
+    font-weight: bold;
+    letter-spacing: 6px;
+    background: url("https://www.transparenttextures.com/patterns/brushed-alum.png");
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* TEXTE GAMING */
+.gaming-text {
+    font-size: 42px;
+    font-weight: bold;
+    letter-spacing: 6px;
+    color: #3fb5ff;
+    margin-left: 10px;
+}
+
+/* =======================
+   MENU
+======================= */
+.menu {
+    display: flex;
+    justify-content: center;
+    background-color: #040b16;
+}
+
+.menu a {
+    padding: 15px 30px;
+    color: white;
+    text-decoration: none;
+    transition: background 0.3s, color 0.3s;
+}
+
+.menu a:hover {
+    background-color: #3fb5ff;
+    color: black;
+}
+
+/* =======================
+   CONTENU
+======================= */
+.container {
+    padding: 50px;
+    max-width: 1000px;
+    margin: auto;
+}
+
+/* =======================
+   SECTION À PROPOS
+======================= */
+.apropos {
+    max-width: 900px;
+    margin: 80px auto;
+    padding: 50px;
+    background: linear-gradient(145deg, #111, #1a1a1a);
+    border: 1px solid #2281c9;
+    border-radius: 15px;
+    text-align: justify;
+    line-height: 1.9;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+    animation: fadeIn 1.2s ease-in-out;
+}
+
+.apropos h2 {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 35px;
+    color: #4fc3f7;
+}
+
+.apropos p {
+    font-size: 18px;
+    margin-bottom: 25px;
+    color: #e0e0e0;
+}
+
+/* =======================
+   SERVICES CLIQUABLES
+======================= */
+.service-link {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.service {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding: 30px;
+    margin-bottom: 40px;
+    background-color: #0b1e36;
+    border-radius: 12px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.service:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(79, 195, 247, 0.35);
+}
+
+.service img {
+    width: 250px;
+    border-radius: 10px;
+}
+
+.service.reverse {
+    flex-direction: row-reverse;
+}
+
+/* =======================
+   BOUTON INFO
+======================= */
+.info-btn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #4fc3f7;
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.info-btn:hover {
+    background: #81d4fa;
+}
+
+/* =======================
+   FORMULAIRE
+======================= */
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+}
+
+button {
+    padding: 12px 25px;
+    background-color: #3fb5ff;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* =======================
+   ANIMATION
+======================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
