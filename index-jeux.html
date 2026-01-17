@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Metal Art Mini-Jeu - Niveaux 1 & 2 & 3</title>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+<style>
+body { margin:0; padding:0; background:#000; }
+canvas { display:block; margin:0 auto; }
+</style>
+</head>
+<body>
+
+<script>
+// --- VARIABLES GLOBALES ---
+let lives = 3;
+let score = 0;
+let timer = 60; // 60 secondes pour finir les 3 niveaux
+let timerEvent 
+let highScores = [];
+let finalScore = 0;
+
+
+class StartScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'StartScene' });
+    }
+
+    create() {
+        this.cameras.main.setBackgroundColor('#000000');
+
+        this.add.text(400, 120, 'METAL ART GAMING', {
+            fontSize: '36px',
+            fill: '#ffffff'
+        }).setOrigin(0.5);
+
+        let playButton = this.add.text(400, 220, '▶ PLAY', {
+            fontSize: '48px',
+            fill: '#00ff00',
+            backgroundColor: '#000',
+            padding: { x: 30, y: 15 }
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+
+   playButton.on('pointerdown', () => {
+    timer = 60;
+    score = 0;
+    lives = 3;
+
+    this.scene.stop('StartScene');
+
+    this.scene.start('UIScene');   // UI active
+    this.scene.launch('Niveau1');  // jeu en parallèle
+});
+
+    }
+}
+
+
+class UIScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'UIScene' });
+    }
+
+    create() {
+        this.timerText = this.add.text(650, 10, 'Temps: ' + timer, {
+            fontSize: '20px',
+            fill: '#ffffff'
+        }).setScrollFactor(0).setDepth(999);
+
+        // 🔥 DÉMARRAGE DU TIMER ICI (AU BON MOMENT)
+        this.startTimer();
+    }
+
+    startTimer() {
+        if (timerEvent) {
+            timerEvent.remove();
+            timerEvent = null;
+        }
+
+        timerEvent = this.time.addEvent({
+            delay: 1000,
+            loop: true,
+            callback: () => {
+                timer--;
+                this.timerText.setText('Temps: ' + timer);
+
+                if (timer <= 0) {
+                    timerEvent.remove();
+                    timerEvent = null;
+
+                    alert("Temps écoulé ! GAME OVER");
+
+                    timer = 60;
+                    lives = 3;
+                    score = 0;
+
+                    this.scene.stop('Niveau1');
+                    this.scene.stop('Niveau2');
+                    this.scene.stop('UIScene');
+                    this.scene.start('StartScene');
+                }
+            }
+        });
+    }
+    stopTimer() {
+    if (timerEvent) {
+        timerEvent.remove();
+        timerEvent = null;
+    }
+}
+
+}
+
+class ScoreScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'ScoreScene' });
+    }
+
+    create() {
+        this.cameras.main.setBackgroundColor('#000');
+
+        this.add.text(400, 80, 'FIN DE PARTIE', {
+            fontSize: '36px',
+            fill: '#ffffff'
+        }).setOrigin(0.5);
+
+        // CALCUL SCORE FINAL
+        finalScore = Math.max(0, score - (60 - timer));
+
+        this.add.text(400, 140, `Score final : ${finalScore}`, {
+            fontSize: '24px',
+            fill: '#00ff00'
+        }).setOrigin(0.5);
+
+        // INPUT HTML POUR NOM
+        let nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.placeholder = 'Votre nom';
+        nameInput.style.position = 'absolute';
+        nameInput.style.top = '50%';
+        nameInput.style.left = '50%';
+        nameInput.style.transform = 'translate(-50%, -50%)';
+        nameInput.style.fontSize = '20px';
+        document.body.appendChild(nameInput);
+
+        // BOUTON VALIDER
+        let validate = this.add.text(400, 260, 'VALIDER', {
+            fontSize: '28px',
+            backgroundColor: '#00aa00',
+            padding: { x: 20, y: 10 }
+        }).setOrigin(0.5).setInteractive();
+
+        validate.on('pointerdown', () => {
+            let playerName = nameInput.value || 'Joueur';
+
+            highScores.push({ name: playerName, score: finalScore });
+            highScores.sort((a, b) => b.score - a.score);
+            highScores = highScores.slice(0, 5);
+
+            nameInput.remove();
+            this.scene.start('LeaderboardScene');
+        });
+    }
+}
+class LeaderboardScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'LeaderboardScene' });
+    }
+
+    create() {
+        this.cameras.main.setBackgroundColor('#000');
+
+        this.add.text(400, 60, 'TABLEAU DES SCORES', {
+            fontSize: '32px',
+            fill: '#ffffff'
+        }).setOrigin(0.5);
+
+        highScores.forEach((entry, index) => {
+            this.add.text(400, 120 + index * 40,
+                `${index + 1}. ${entry.name} - ${entry.score}`,
+                { fontSize: '22px', fill: '#ffff00' }
+            ).setOrigin(0.5);
+        });
+
+        // BOUTON REJOUER
+        let replay = this.add.text(400, 350, '🔁 REJOUER', {
+            fontSize: '28px',
+            backgroundColor: '#0044ff',
+            padding: { x: 25, y: 10 }
+        }).setOrigin(0.5).setInteractive();
+
+        replay.on('pointerdown', () => {
+            timer = 60;
+            score = 0;
+            lives = 3;
+
+            this.scene.start('StartScene');
+        });
+    }
+}
+
+// --- SCÈNE NIVEAU 1 ---
+
+class Niveau1 extends Phaser.Scene {
+    constructor() { super({ key: 'Niveau1' }); }
+
+    create(){
+        this.physics.world.setBounds(0,0,3100,500); // le monde va jusqu'à 2400px
+        this.cameras.main.setBounds(0,0,3100,400); // caméra suit dans ce monde
+        this.playerDirection = 1; // 1 = droite, -1 = gauche
+        this.isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+
+if (this.isMobile) {
+    this.createMobileControls();
+}
+
+        // --- Plateformes ---
+        this.platforms = this.physics.add.staticGroup();
+        this.platforms.create(400, 390, null).setDisplaySize(1600, 20).refreshBody(); // sol
+        this.platforms.create(200, 300, null).setDisplaySize(100,20).refreshBody();
+        this.platforms.create(400, 250, null).setDisplaySize(120,20).refreshBody();
+        this.platforms.create(600, 200, null).setDisplaySize(120,20).refreshBody();
+        this.platforms.create(800, 150, null).setDisplaySize(120,20).refreshBody();
+        this.platforms.create(1300, 300, null).setDisplaySize(120,20).refreshBody();
+        this.platforms.create(1500, 250, null).setDisplaySize(120,20).refreshBody();
+        this.platforms.create(1700, 200, null).setDisplaySize(120,20).refreshBody();
+        this.platforms.create(1900, 150, null).setDisplaySize(120,20).refreshBody();
+        this.platforms.create(2100, 390, null).setDisplaySize(120,20).refreshBody();
+         this.platforms.create(1850, 350, null).setDisplaySize(120,20).refreshBody();
+         this.platforms.create(2300, 350, null).setDisplaySize(120,20).refreshBody();
+         this.platforms.create(2500, 300, null).setDisplaySize(120,20).refreshBody();
+         this.platforms.create(2850, 390, null).setDisplaySize(500, 20).refreshBody(); // sol
+        
+        // --- Joueur ---
+        this.player = this.physics.add.sprite(50,300,null).setDisplaySize(40,60);
+        this.player.setCollideWorldBounds(false);
+        this.player.body.setGravityY(1200);
+        this.physics.add.collider(this.player, this.platforms);
+
+        // --- Ennemis ---
+        this.enemies = this.physics.add.group();
+        this.createEnemy(300, 330,300,-50);
+        this.createEnemy(500, 330,500,-50);
+        this.createEnemy(700, 330,700,-50);
+        this.createEnemy(900, 330,900,-50);
+        this.createEnemy(1100, 330,1100,-50);
+        this.createEnemy(1300, 330,1300,-50);
+        this.physics.add.collider(this.enemies, this.platforms);
+        this.physics.add.collider(this.player, this.enemies, this.hitEnemy, null, this);
+
+      // --- Collectibles fixes ---
+this.collectibles = this.physics.add.staticGroup(); // STATIC = pas de gravité
+this.collectibles.create(200, 250, null).setDisplaySize(20,20).refreshBody(); 
+this.collectibles.create(400, 200, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(600, 150, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(800, 100, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(1100, 330, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(1300, 250, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(1500, 200, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(1700, 150, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(1900, 100, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(1850, 300, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(2100, 340, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(2300, 300, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(2500, 250, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(2700, 340, null).setDisplaySize(20,20).refreshBody();
+this.collectibles.create(2900, 340, null).setDisplaySize(20,20).refreshBody();
+
+// --- Overlap avec joueur ---
+this.physics.add.overlap(this.player, this.collectibles, this.collectItem, null, this);
+
+        // --- Fin du niveau ---
+        this.finishLine = this.add.rectangle(3000,360,20,100,0xff0000);
+        this.physics.add.existing(this.finishLine,true);
+        this.physics.add.overlap(this.player, this.finishLine, this.reachFinish, null, this);
+
+        // --- Caméra ---
+        this.cameras.main.startFollow(this.player);
+
+        // --- Input ---
+        this.cursors = this.input.keyboard.createCursorKeys();
+
+        // --- HUD ---
+        this.scoreText = this.add.text(10,10,'Score: '+score,{fontSize:'20px', fill:'#fff'}).setScrollFactor(0);
+        this.livesText = this.add.text(10,35,'Vies: '+lives,{fontSize:'20px', fill:'#fff'}).setScrollFactor(0);
+
+        this.gameOver = false;
+    }
+
+   update(){
+    if(this.gameOver) return;
+
+   // --- Mouvement joueur ---
+this.player.setVelocityX(0);
+
+// GAUCHE
+if (
+    this.cursors.left.isDown ||
+    (this.isMobile && this.mobileLeft)
+) {
+    this.player.setVelocityX(-200);
+    this.player.setFlipX(true);
+}
+
+// DROITE
+if (
+    this.cursors.right.isDown ||
+    (this.isMobile && this.mobileRight)
+) {
+    this.player.setVelocityX(200);
+    this.player.setFlipX(false);
+}
+
+// SAUT
+if (
+    (this.cursors.up.isDown || (this.isMobile && this.mobileJump)) &&
+    this.player.body.blocked.down
+) {
+    this.player.setVelocityY(-750);
+}
+
+
+    // --- Perdre vie si tombe ---
+    if(this.player.y > 400){ this.loseLife(); }
+
+    // --- Ennemi sautillant avec mouvement horizontal ---
+    this.enemies.getChildren().forEach(e=>{
+        // Saut
+        if(e.body.blocked.down && !e.hasJumped){
+            e.setVelocityY(-200);
+            e.hasJumped = true;
+            setTimeout(()=>{ e.hasJumped = false; }, 600);
+        }
+
+        // Déplacement horizontal
+        if(e.x >= (e.maxX || 800)){  // limite droite
+            e.setVelocityX(-50);
+        } else if(e.x <= (e.minX || 0)){  // limite gauche
+            e.setVelocityX(50);
+        }
+    });
+
+}
+
+    createEnemy(x, y, minX, maxX){
+        let e = this.physics.add.sprite(x,y,null).setDisplaySize(40,40);
+        e.body.setGravityY(1000);
+        e.setVelocityX(50); // vitesse initiale
+        e.minX = minX;
+        e.maxX = maxX;
+        e.hasJumped = false;
+        this.enemies.add(e);
+    }
+
+    createCollectible(x,y){
+    let c = this.add.sprite(x, y, null).setDisplaySize(20, 20); // <--- utiliser add.sprite, pas physics.add.sprite
+    this.collectibles.add(c);
+}
+
+createMobileControls() {
+    this.btnLeft = this.add.text(60, 330, '◀', {
+        fontSize: '48px',
+        fill: '#ffffff',
+        backgroundColor: '#000000'
+    }).setScrollFactor(0).setDepth(999).setInteractive();
+
+    this.btnRight = this.add.text(140, 330, '▶', {
+        fontSize: '48px',
+        fill: '#ffffff',
+        backgroundColor: '#000000'
+    }).setScrollFactor(0).setDepth(999).setInteractive();
+
+    this.btnJump = this.add.text(720, 330, '⤒', {
+        fontSize: '48px',
+        fill: '#ffffff',
+        backgroundColor: '#000000'
+    }).setScrollFactor(0).setDepth(999).setInteractive();
+
+    // États
+    this.mobileLeft = false;
+    this.mobileRight = false;
+    this.mobileJump = false;
+
+    this.btnLeft
+        .on('pointerdown', () => this.mobileLeft = true)
+        .on('pointerup', () => this.mobileLeft = false)
+        .on('pointerout', () => this.mobileLeft = false);
+
+    this.btnRight
+        .on('pointerdown', () => this.mobileRight = true)
+        .on('pointerup', () => this.mobileRight = false)
+        .on('pointerout', () => this.mobileRight = false);
+
+    this.btnJump
+        .on('pointerdown', () => this.mobileJump = true)
+        .on('pointerup', () => this.mobileJump = false);
+}
+
+    hitEnemy(){ this.loseLife(); }
+
+    collectItem(player, collectible){
+        collectible.destroy();
+        score += 50;
+        this.scoreText.setText('Score: '+score);
+    }
+  
+
+    loseLife(){
+        lives -= 1;
+        this.livesText.setText('Vies: '+lives);
+        this.player.setX(50);
+        this.player.setY(300);
+        if(lives <= 0){
+            this.gameOver = true;
+            setTimeout(()=>{
+                let playerName = prompt("GAME OVER ! Score: "+score+"\nEntrez votre nom (3 lettres):");
+                alert("Merci "+playerName+" ! Score final: "+score);
+                this.scene.restart();
+                lives = 3;
+                score = 0;
+                this.gameOver = false;
+                this.scoreText.setText('Score: 0');
+                this.livesText.setText('Vies: 3');
+            },100);
+        }
+    }
+
+reachFinish(){
+    alert("Niveau 1 terminé ! Score: " + score);
+
+    this.scene.stop('Niveau1');
+    this.scene.launch('Niveau2');
+    this.scene.bringToTop('UIScene');
+}
+
+}
+
+// --- SCÈNE NIVEAU 2 ---
+class Niveau2 extends Phaser.Scene {
+    constructor(){ super({ key:'Niveau2' }); }
+
+    create(){
+
+        this.physics.world.setBounds(0,0,3100,500);
+        this.cameras.main.setBounds(0,0,3100,400);
+
+        this.gameOver = false;
+        this.reachedFinishAlerted = false;
+
+        this.playerDirection = 1; // 1 = droite, -1 = gauche
+
+        // HUD
+        this.scoreText = this.add.text(10,10,'Score: '+score,{fontSize:'20px',fill:'#fff'}).setScrollFactor(0);
+        this.livesText = this.add.text(10,35,'Vies: '+lives,{fontSize:'20px',fill:'#fff'}).setScrollFactor(0);
+    
+
+// --- PLATEFORMES ---
+this.platforms = this.physics.add.staticGroup();
+
+this.platforms.create(400, 390, null)
+    .setDisplaySize(3000, 20)
+    .refreshBody(); // sol
+
+this.platforms.create(200, 300, null)
+    .setDisplaySize(100, 20)
+    .refreshBody();
+
+this.platforms.create(400, 250, null)
+    .setDisplaySize(120, 20)
+    .refreshBody();
+
+this.platforms.create(700, 200, null)
+    .setDisplaySize(240, 20)
+    .refreshBody();
+
+          // --- Joueur ---
+        this.player = this.physics.add.sprite(50,300,null).setDisplaySize(40,60);
+        this.player.setCollideWorldBounds(false);
+        this.player.body.setGravityY(1200);
+        this.physics.add.collider(this.player, this.platforms);
+
+        // Fusil
+        this.hasGun = false;
+        this.gunPickup = this.physics.add.staticSprite(700,150,null).setDisplaySize(30,15);
+        this.physics.add.overlap(this.player,this.gunPickup,this.pickupGun,null,this);
+
+        // Ennemis
+        this.enemies = this.physics.add.group();
+        this.createEnemy(300,330,250,350);
+        this.createEnemy(500,330,450,550);
+        this.createEnemy(700,330,650,750);
+        this.createEnemy(900,330,850,950);
+        this.createEnemy(1100,330,1050,1150);
+        this.createEnemy(1300,330,1250,1350);
+
+        // Boss
+        this.createBoss(1500,300,200);
+
+        this.physics.add.collider(this.enemies,this.platforms);
+        this.physics.add.collider(this.player,this.enemies,this.hitEnemy,null,this);
+
+        // Balles
+        this.bullets = this.physics.add.group();
+        this.canShoot = true;
+        this.physics.add.overlap(this.bullets,this.enemies,this.hitBullet,null,this);
+
+        // Fin
+        this.finishLine = this.add.rectangle(1700,360,20,80,0xff0000);
+        this.physics.add.existing(this.finishLine,true);
+        this.physics.add.overlap(this.player,this.finishLine,this.checkFinish,null,this);
+
+        // Input
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.input.keyboard.on('keydown-SPACE',this.shoot,this);
+
+        this.cameras.main.startFollow(this.player);
+    }
+
+    update(){
+        if(this.gameOver) return;
+       
+   // --- Mouvement joueur ---
+    this.player.setVelocityX(0);
+
+if(this.cursors.left.isDown){
+    this.player.setVelocityX(-200);
+    this.playerDirection = -1;
+    this.player.setFlipX(true); // regarde à gauche
+}
+
+if(this.cursors.right.isDown){
+    this.player.setVelocityX(200);
+    this.playerDirection = 1;
+    this.player.setFlipX(false); // regarde à droite
+}
+if(this.cursors.up.isDown && this.player.body.touching.down){ 
+        this.player.setVelocityY(-750);
+    }
+
+
+
+        // IA ennemis
+        this.enemies.getChildren().forEach(e => {
+
+            // saut
+            if(e.body.blocked.down && !e.hasJumped){
+                e.setVelocityY(-150);
+                e.hasJumped = true;
+                this.time.delayedCall(600,()=>{ e.hasJumped = false; });
+            }
+
+            // patrouille
+            if(e.x >= e.maxX) e.direction = -1;
+            if(e.x <= e.minX) e.direction = 1;
+
+            e.setVelocityX(50 * e.direction);
+        });
+    }
+
+    createEnemy(x,y,minX,maxX){
+        let e = this.physics.add.sprite(x,y,null).setDisplaySize(40,40);
+        e.body.setGravityY(1000);
+        e.minX = minX;
+        e.maxX = maxX;
+        e.direction = 1;
+        e.hasJumped = false;
+        e.isBoss = false;
+        this.enemies.add(e);
+    }
+
+    createBoss(x,y,width){
+        let boss = this.physics.add.sprite(x,y,null).setDisplaySize(100,100);
+        boss.body.setGravityY(1000);
+        boss.minX = x - width/2;
+        boss.maxX = x + width/2;
+        boss.direction = 1;
+        boss.hasJumped = false;
+        boss.isBoss = true;
+        boss.health = 5;
+        this.enemies.add(boss);
+    }
+
+    pickupGun(player,gun){
+        gun.destroy();
+        this.hasGun = true;
+    }
+shoot(){
+    if(!this.hasGun || !this.canShoot) return;
+
+    let dir = this.player.flipX ? -1 : 1;
+    let offsetX = dir === 1 ? 25 : -25;
+
+    let b = this.bullets.create(
+        this.player.x + offsetX,
+        this.player.y + 10,
+        null
+    ).setDisplaySize(12,4);
+
+    b.setVelocityX(600 * dir);
+    b.body.allowGravity = false;
+
+    // ⏱️ Détruire la balle après 2 secondes
+    this.time.delayedCall(300, () => {
+        if (b.active) {
+            b.destroy();
+        }
+    });
+
+    // 🔴 Détruire si elle sort du monde
+    b.setCollideWorldBounds(true);
+    b.body.onWorldBounds = true;
+
+    b.body.world.on('worldbounds', body => {
+        if(body.gameObject === b){
+            b.destroy();
+        }
+    });
+
+    this.canShoot = false;
+    this.time.delayedCall(250, () => { this.canShoot = true; });
+}
+
+
+
+
+    hitBullet(bullet,enemy){
+        bullet.destroy();
+        if(enemy.isBoss){
+            enemy.health--;
+            if(enemy.health<=0){ enemy.destroy(); score+=500; }
+        } else {
+            enemy.destroy();
+            score+=100;
+        }
+        this.scoreText.setText('Score: '+score);
+    }
+
+    hitEnemy(){ this.loseLife(); }
+
+    loseLife(){
+        lives--;
+        this.livesText.setText('Vies: '+lives);
+        this.player.setPosition(50,300);
+        if(lives<=0){
+            this.gameOver=true;
+            alert("GAME OVER");
+            lives=3; score=0;
+            this.scene.restart();
+        }
+    }
+// --- FIN DU NIVEAU 2 ---
+checkFinish() {
+    if (this.reachedFinishAlerted) return;
+    this.reachedFinishAlerted = true;
+
+    // STOP TIMER
+    this.scene.get('UIScene').stopTimer();
+
+    // STOP SCÈNES DE JEU
+    this.scene.stop('Niveau1');
+    this.scene.stop('Niveau2');
+    this.scene.stop('UIScene');
+
+    // ÉCRAN DE SCORE (UN SEUL)
+    this.scene.start('ScoreScene');
+}
+
+}
+
+// --- Niveau 3 ---
+
+
+// --- LANCER LE JEU ---
+let config = {
+    type: Phaser.AUTO,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: 800,
+        height: 400
+    },
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 1200 },
+            debug: false
+        }
+    },
+    scene: [
+    StartScene,
+    UIScene,
+    Niveau1,
+    Niveau2,
+    ScoreScene,
+    LeaderboardScene
+]
+
+};
+
+
+let game = new Phaser.Game(config);
+
+
+</script>
+
+</body>
+</html>
